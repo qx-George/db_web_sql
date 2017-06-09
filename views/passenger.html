@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>passenger</title>
+    
+    <link href="/bootstrap-3.3.7-dist/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+    <body>
+	  <div class="container">
+	      <div class="row clearfix">
+	        <div class="col-md-12 column">
+	          <ul class="nav nav-pills">
+	            <li>
+	               <a href="main">首页</a>
+	            </li>
+	            <li class="active">
+	               <a href="passenger">查询</a>
+	            </li>
+	            <li>
+	               <a href="order">查看订单</a>
+	            </li>
+	            <li class="dropdown pull-right">
+	               <a href="#" data-toggle="dropdown" class="dropdown-toggle">下拉<strong class="caret"></strong></a>
+	              <ul class="dropdown-menu">
+	                <li>
+	                   <a href="#">操作</a>
+	                </li>
+	                <li>
+	                   <a href="#">设置栏目</a>
+	                </li>
+	                <li>
+	                   <a href="#">更多设置</a>
+	                </li>
+	                <li class="divider">
+	                </li>
+	                <li>
+	                   <a href="#">分割线</a>
+	                </li>
+	              </ul>
+	            </li>
+	          </ul>
+	          		<h1 class="text-center text-success">
+						网上机票预订系统
+					</h1>
+	          <form role="form" action="passenger" method="GET">
+	           <fieldset>
+	           <legend>请输入查询信息</legend>
+                    <div class="form-group">
+                        <label for="InputAirinfo1">出发城市</label><input class="form-control" id="InputAirinfo1" type="text" name = "depature_city" required="required" style="display: inline-block;width: 20%;"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="InputAirinfo2">到达城市</label><input class="form-control" id="InputAirinfo2" type="text" name = "arrival_city" required="required" style="display: inline-block;width: 20%;" />
+                    </div>
+                    <div class="form-group">
+                        <label for="InputAirinfo3">出发时间</label><input class="form-control" id="InputAirinfo3" type="date" name = "time" required="required" style="display: inline-block;width: 20%;"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="InputAirinfo4">舱位</label>
+                        <select name="aclass" class="btn btn-default">
+							<option value="经济舱" selected>经济舱</option>
+							<option value="头等舱">头等舱</option>
+						</select>
+                    </div></br><button type="submit" class="btn btn-default" name="save" value="save">查询</button>
+              </fieldset>
+            </form>  
+			<h1 align = "center">查询结果</h1>
+				<div class="container">
+					<div class="row clearfix">
+						<div class="col-md-12 column">
+							<table class="table">
+								<thead>
+									<tr>
+										<th>
+											航空公司
+										</th>
+										<th>
+											航班号
+										</th>
+										<th>
+											出发时间
+										</th>
+										<th>
+											到达时间
+										</th>
+										<th>
+											始发机场
+										</th>
+										<th>
+											到达机场
+										</th>
+										<th>
+											价格
+										</th>
+									</tr>
+								</thead>
+								<tbody>
+								%for row in rows:
+				  					<tr class = "success">
+				  					%for col in row:
+				    					<td>{{col}}</td>
+				 					%end
+				 						<td><button type="button" class="btn btn-info" onclick="javascript:window.location.href='/reserve/' + '{{row[1]}}/' + '{{aclass}}'">预订</button></td>
+				  					</tr>
+								%end
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		  </div>
+		</div>
+		  <script type="text/javascript">
+	        %if message != ' ':
+	          alert('{{message}}')
+	        %end
+	      </script>
+	    <script src="/bootstrap-3.3.7-dist/js/jquery-3.2.1.js"></script>
+      <script src="/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+	</body>
+</html>

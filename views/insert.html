@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>Bootstrap 101 Template</title>
+
+    <!-- Bootstrap -->
+    <link href="./bootstrap-3.3.7-dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+    <body>
+      <form role="form" action="insert" method="GET">
+        <div class="form-group">
+            <label for="exampleInputBookinfo1">标题</label><input class="form-control" id="exampleInputBookinfo1" type="text" name = "title" />
+        </div>
+        <div class="form-group">
+            <label for="exampleInputBookinfo2">作者</label><input class="form-control" id="exampleInputPassword1" type="text" name = "writer" />
+        </div>
+        <div class="form-group">
+           <label for="exampleInputBookinfo3">出版年份</label><input class="form-control" id="exampleInputPassword1" type="month" name = "pyear" />
+        </div>
+        <div class="form-group">
+            <label for="exampleInputBookinfo4">出版机构</label><input class="form-control" id="exampleInputPassword1" type="text" name = "pinstitution" />
+        </div>
+        <div class="form-group">
+            <label for="exampleInputBookinfo5">出版地</label><input class="form-control" id="exampleInputPassword1" type="text" name = "plocation" />
+        </div>
+        <div class="form-group">
+            <label for="exampleInputBookinfo6">页数</label><input class="form-control" id="exampleInputPassword1" type="number" name = "page" />
+        </div><button type="submit" class="btn btn-default" name="save" value="save">Submit</button>
+      </form>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <!--script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script-->
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+      <script src="./bootstrap-3.3.7-dist/js/jquery-3.2.1.js"></script>
+    <script src="./bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+  </body>
+</html>
