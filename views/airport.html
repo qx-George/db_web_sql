@@ -15,19 +15,19 @@
 	        <div class="col-md-12 column">
 	          <ul class="nav nav-pills">
 	            <li>
-	               <a href="main">首页</a>
+	               <a href="/main">首页</a>
 	            </li>
 	            <li>
-	               <a href="administrator">维护航班信息</a>
+	               <a href="/administrator">维护航班信息</a>
 	            </li>
 	            <li class="active">
-	               <a href="airport">维护机场信息</a>
+	               <a href="/airport">维护机场信息</a>
 	            </li>
 	            <li>
-	               <a href="plane_type">维护机型信息</a>
+	               <a href="/plane_type">维护机型信息</a>
 	            </li>
 	            <li>
-	               <a href="maintain_order">维护订单</a>
+	               <a href="/maintain_order">维护订单</a>
 	            </li>
 	            <li class="dropdown pull-right">
 	               <a href="#" data-toggle="dropdown" class="dropdown-toggle">下拉<strong class="caret"></strong></a>
@@ -52,7 +52,7 @@
 	          		<h1 class="text-center text-success">
 						网上机票预订系统
 					</h1>
-			  <form role="form" action="add_airport" method="GET">
+			  <form role="form" action="/add_airport" method="GET">
 	           <fieldset>
 	           <legend>添加机场信息</legend>
 	           		<div class="form-group">
@@ -84,6 +84,8 @@
 				  					%for col in row:
 				    					<td>{{col}}</td>
 				 					%end
+				 						<td><button type="button" class="btn btn-warning" onclick="javascript:window.location.href='/modify_airport/' + '{{row[0]}}'">修改</button></td>
+				 						<td><button type="button" class="btn btn-danger" onclick="javascript:window.location.href='/remove_airport/' + '{{row[0]}}'">删除</button></td>
 				  					</tr>
 								%end
 								</tbody>

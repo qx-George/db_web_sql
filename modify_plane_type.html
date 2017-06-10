@@ -52,53 +52,20 @@
 	          		<h1 class="text-center text-success">
 						网上机票预订系统
 					</h1>
-			  <form role="form" action="/add_plane_type" method="GET">
+			  <form role="form" action="/modify_plane_type/{{plane_type}}" method="POST">
 	           <fieldset>
-	           <legend>添加机型信息</legend>
+	           <legend>修改机型信息</legend>
 	           		<div class="form-group">
-                        <label for="Plane_typeinfo1">客机型号</label><input class="form-control" id="InputAirinfo1" type="text" name = "type" required="required" style="display: inline-block;width: 22%;"/>
+                        <label for="Plane_typeinfo1">客机型号</label><input class="form-control" id="InputAirinfo1" type="text" name = "type" style="display: inline-block;width: 22%;"/>
                     </div>
                     <div class="form-group">
-                        <label for="Plane_typeinfo2">经济舱座位数</label><input class="form-control" id="InputAirinfo1" type="text" name = "tourist_class" required="required" style="display: inline-block;width: 20%;"/>
+                        <label for="Plane_typeinfo2">经济舱座位数</label><input class="form-control" id="InputAirinfo1" type="text" name = "tourist_class" style="display: inline-block;width: 20%;"/>
                     </div>
 	           		<div class="form-group">
-                        <label for="Plane_typeinfo3">头等舱座位数</label><input class="form-control" id="InputAirinfo1" type="text" name = "first_class" required="required" style="display: inline-block;width: 20%;"/>
-                    </div></br><button type="submit" class="btn btn-default" name="save" value="save">添加</button>
+                        <label for="Plane_typeinfo3">头等舱座位数</label><input class="form-control" id="InputAirinfo1" type="text" name = "first_class" style="display: inline-block;width: 20%;"/>
+                    </div></br><button type="submit" class="btn btn-default" name="save" value="save">修改</button>
               </fieldset>
             </form>  
-			<h1 align = "center">所有机型信息</h1>
-				<div class="container">
-					<div class="row clearfix">
-						<div class="col-md-12 column">
-							<table class="table">
-								<thead>
-									<tr>
-										<th>
-											客机型号
-										</th>
-										<th>
-											经济舱座位数
-										</th>
-										<th>
-											头等舱座位数
-										</th>
-									</tr>
-								</thead>
-								<tbody>
-								%for row in rows:
-				  					<tr class = "success">
-				  					%for col in row:
-				    					<td>{{col}}</td>
-				 					%end
-				 						<td><button type="button" class="btn btn-warning" onclick="javascript:window.location.href='/modify_plane_type/' + '{{row[0]}}'">修改</button></td>
-				 						<td><button type="button" class="btn btn-danger" onclick="javascript:window.location.href='/remove_plane_type/' + '{{row[0]}}'">删除</button></td>
-				  					</tr>
-								%end
-								</tbody>
-							</table>
-						</div>
-					</div>
-				</div>
 			</div>
 		  </div>
 		</div>

@@ -3,11 +3,13 @@
 
 import pymysql, sys
 from bottle import get, route, run, debug, template, request, static_file, error, redirect
-from sql import update_flight, query_flight, insert_flight
-from sql import query_airport, insert_airport
-from sql import query_plane_type, insert_plane_type
+from sql import update_flight, query_flight, view_flight, insert_flight, delete_flight, update_flight_all
+from sql import query_airport, insert_airport, delete_airport, update_airport
+from sql import query_plane_type, insert_plane_type, delete_plane_type, update_plane_type
 from sql import insert_passenger, query_passenger
 from sql import is_printed, query_ticket, update_ticket, insert_ticket, delete_ticket
+#对表的组合操作
+from sql import passenger_flight, check_seats, show_order
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -51,48 +53,19 @@ def check_signin(administrator, account, password):
 		else:
 			return False
 
-#info query module for passenger
+#旅客查询航班信息界面
 @route('/passenger')
 def passenger():
-	if request.GET.save:
-		depature_city = request.GET.depature_city.strip()
-		arrival_city = request.GET.arrival_city.strip()
-		time = request.GET.time.strip()
-		aclass = request.GET.aclass.strip()
+	depature_city = request.GET.depature_city.strip()
+	arrival_city = request.GET.arrival_city.strip()
+	time = request.GET.time.strip()
+	aclass = request.GET.aclass.strip()
 
-		#首先由城市查到可能的机场
-		para = []
-		para.append(depature_city)
-		para.append(arrival_city)
-		para.append(time)
-		sql = "SELECT company, id, departure_time, arrival_time, departure_airport, arrival_airport, "
-		if aclass == '经济舱':
-			sql += "tourist_price "
-		else:
-			sql += "first_price "
-		sql += "from flight "
-		sql += "WHERE departure_airport in "
-		sql += "(SELECT airport from airport where city = %s) "
-		sql += "and arrival_airport in "
-		sql += "(SELECT airport from airport where city = %s) "
-		sql += "and DATE_FORMAT(departure_time, '%%Y-%%m-%%d') = %s"
-		
-		conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='961105', db='test1', use_unicode=True, charset="utf8")
-		cursor = conn.cursor()
-		cursor.execute(sql, tuple(para))
-		result = cursor.fetchall()
-		cursor.close()
-		output = template('passenger', rows=result, aclass = aclass, message = ' ')
-		return output
-	#query all flight info by default
-	else:
-		conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='961105', db='test1', use_unicode=True, charset="utf8")
-		cursor = conn.cursor()
-		cursor.execute("SELECT company, id, departure_time, arrival_time, departure_airport, arrival_airport, tourist_price from flight")
-		result = cursor.fetchall()
-		cursor.close()
-		output = template('passenger', rows=result, aclass = '经济舱', message = ' ') #默认传过去的是预订经济舱
-		return output
+	if not aclass:
+		aclass = '经济舱'
+	result = passenger_flight(depature_city, arrival_city, time, aclass)
+	
+	return template('passenger', rows=result, aclass = '经济舱', message = ' ')
 
 
 #管理员的主界面，默认显示所有的航班信息
@@ -184,56 +157,10 @@ def pay(pass_id, flight_id):
 	return template('order', rows = show_order(), message = message)
 
 
-#检查座位是否已经订满
-def check_seats(flight_id, aclass):
-	conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='961105', db='test1', use_unicode=True, charset="utf8")
-	cursor = conn.cursor()
-	#首先由flight_id查出飞机的type
-	para = []
-	para.append(flight_id)
-	sql = "SELECT plane_type, tourist_reserved, first_reserved from flight "
-	sql += "WHERE id = %s"
-	cursor.execute(sql, tuple(para))
-	result = cursor.fetchone()
-
-	flight_type = result[0]
-	tourist_reserved = result[1]
-	first_reserved = result[2]
-
-	para = []
-	para.append(flight_type)
-	sql = "SELECT tourist_class, first_class from plane_type "
-	sql += " WHERE type = %s"
-	cursor.execute(sql, tuple(para))
-	result = cursor.fetchone()
-	cursor.close()
-
-	tourist_class = result[0]
-	first_class = result[1]
-
-	if aclass == '经济舱':
-		if tourist_reserved == tourist_class:
-			return False
-	else:
-		if first_reserved == first_class:
-			return False
-	return True
-
 #旅客查看订单的页面
 @route('/order')
 def order():
-
 	return template('order', rows = show_order(), message = ' ')
-
-def show_order():
-	sql = "SELECT pname, pass_id, cellnumber, flight_id, class, price, printed, paid from passenger, ticket where pass_id = passenger.id"
-	conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='961105', db='test1', use_unicode=True, charset="utf8")
-	cursor = conn.cursor()
-	cursor.execute(sql)
-	result = cursor.fetchall()
-	cursor.close()
-
-	return result
 
 #查看航班信息
 @route('/order/view/<flight_id>/<pclass>')
@@ -245,26 +172,6 @@ def order(flight_id, pclass):
 	else:
 		message = "未找到航班信息！"
 		return template('order', rows = show_order(), message = message)
-
-#查看航班信息
-def view_flight(flight_id, pclass):
-	sql = "SELECT company, id, departure_time, arrival_time, departure_airport, arrival_airport, " 
-	if pclass == '经济舱':
-		sql += "tourist_price "
-	else:
-		sql += "first_price "
-	sql += "from flight "
-	sql += "WHERE id = %s"
-
-	para = []
-	para.append(flight_id)
-	conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='961105', db='test1', use_unicode=True, charset="utf8")
-	cursor = conn.cursor()
-	cursor.execute(sql, para)
-	result = cursor.fetchone()
-	cursor.close()
-
-	return result
 
 #航班信息添加操作
 @route('/add_flight', method='GET')
@@ -319,117 +226,108 @@ def add_plane_type():
 
 	return template('plane_type', rows = query_plane_type(), message = message)
 
-#info modify module
-@route('/modify')
-def modify():
-	return template('modify')
-
-#info delete module
-@route('/delete', method='GET')
-def delete():
-	if request.GET.save:
-		title = request.GET.title.strip()
-		
-		conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='961105', db='test1', use_unicode=True, charset="utf8")
-		cursor = conn.cursor()
-		cursor.execute("DELETE from book WHERE title = %s ", title)
-		new_id = cursor.lastrowid
-
-		conn.commit()
-		cursor.close()
-
-		return template('modify')
+#航班信息删除操作
+@route('/remove_flight/<flight_id>', method='GET')
+def remove_flight(flight_id):
+	result = delete_flight(flight_id)
+	if result:
+	 	message = "航班信息删除成功！"
 	else:
-		return template('modify')
+		message = "航班信息删除失败！"
 
-#info insert module
-@route('/insert', method='GET')
-def insert():
-	if request.GET.save:
-		title = request.GET.title.strip()
-		writer = request.GET.writer.strip()
-		pyear = request.GET.pyear.strip()
-		pinstitution = request.GET.pinstitution.strip()
-		plocation = request.GET.plocation.strip()
-		page = request.GET.page.strip()
-		
-		conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='961105', db='test1', use_unicode=True, charset="utf8")
-		cursor = conn.cursor()
-		cursor.execute("INSERT INTO book values(%s, %s, %s, %s, %s, %s)", 
-			(title, writer, pyear, pinstitution, plocation, page))
-		new_id = cursor.lastrowid
+	return template('administrator', rows = query_flight(), message = message)
 
-		conn.commit()
-		cursor.close()
-
-		return template('modify')
+#机场信息删除操作
+@route('/remove_airport/<airport>', method='GET')
+def remove_airport(airport):
+	result = delete_airport(airport)
+	if result:
+	 	message = "机场信息删除成功！"
 	else:
-		return template('modify')
+		message = "机场信息删除失败！"
 
-#info update module
-@route('/update', method='GET')
-def update():
-	if request.GET.save:
-		old_title = request.GET.old_title.strip()
-		title = request.GET.title.strip()
-		writer = request.GET.writer.strip()
-		pyear = request.GET.pyear.strip()
-		pinstitution = request.GET.pinstitution.strip()
-		plocation = request.GET.plocation.strip()
-		page = request.GET.page.strip()
-		
-		count = 0	
-		para = []
-		sql = "UPDATE book SET"
+	return template('airport', rows = query_airport(), message = message)
 
-		if title != '':
-			sql += " title = %s"
-			para.append(title)
-			count += 1
-		if writer != '':
-			if count:
-				sql += ","
-			sql += " writer = %s"
-			para.append(writer)
-			count += 1
-		if pyear:
-			if count:
-				sql += ","
-			sql += " pyear = %s"
-			para.append(pyear)
-			count += 1
-		if pinstitution != '':
-			if count:
-				sql += ","
-			sql += " pinstitution = %s"
-			para.append(pinstitution)
-			count += 1
-		if plocation != '':
-			if count:
-				sql += ","
-			sql += " plocation = %s"
-			para.append(plocation)
-			count += 1
-		if page:
-			if count:
-				sql += ","
-			sql += " page = %s"
-			para.append(page)
-			count += 1
-
-		if old_title != '':
-			sql += " WHERE title LIKE " + "'" + old_title + "'"
-
-			conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='961105', db='test1', use_unicode=True, charset="utf8")
-			cursor = conn.cursor()
-			cursor.execute(sql, tuple(para))
-			new_id = cursor.lastrowid
-			conn.commit()
-			cursor.close()
-
-		return template('modify')
+#机型信息删除操作
+@route('/remove_plane_type/<plane_type>', method='GET')
+def remove_plane_type(plane_type):
+	result = delete_plane_type(plane_type)
+	if result:
+	 	message = "机型信息删除成功！"
 	else:
-		return template('modify')
+		message = "机型信息删除失败！"
+
+	return template('plane_type', rows = query_plane_type(), message = message)
+
+#航班信息修改界面，输入要修改的信息
+@route('/modify_flight/<flight_id>')
+def modify_flight(flight_id):
+	return template('modify_flight', flight_id = flight_id , message = ' ')
+
+#航班信息修改操作
+@route('/modify_flight/<old_flight_id>', method = 'POST')
+def modify_flight(old_flight_id):
+	flight_id = request.forms.get('flight_id')
+	company = request.forms.get('company')
+	plane_type = request.forms.get('plane_type')
+	departure_airport = request.forms.get('departure_airport')
+	arrival_airport = request.forms.get('arrival_airport')
+	departure_time = request.forms.get('departure_time')
+	arrival_time = request.forms.get('arrival_time')
+	tourist_reserved = request.forms.get('tourist_reserved')
+	first_reserved = request.forms.get('first_reserved')
+	tourist_price = request.forms.get('tourist_price')
+	first_price = request.forms.get('first_price')
+
+	result = update_flight_all(old_flight_id, flight_id, company, plane_type, departure_airport, arrival_airport,
+	departure_time, arrival_time, tourist_reserved, first_reserved, tourist_price, first_price)
+
+	if result:
+		message = "航班信息修改成功！"
+	else:
+		message = "航班信息修改失败！"
+
+	return template('administrator', rows = query_flight(), message = message)
+
+#机场信息修改界面，输入要修改的信息
+@route('/modify_airport/<airport>')
+def modify_airport(airport):
+	return template('modify_airport', airport = airport , message = ' ')
+
+#机场信息修改操作
+@route('/modify_airport/<old_airport>', method = 'POST')
+def modify_airport(old_airport):
+	airport = request.forms.get('airport')
+	city = request.forms.get('city')
+
+	result = update_airport(old_airport, airport, city)
+
+	if result:
+		message = "机场信息修改成功！"
+	else:
+		message = "机场信息修改失败！"
+
+	return template('airport', rows = query_airport(), message = message)
+
+#机型信息修改界面，输入要修改的信息
+@route('/modify_plane_type/<plane_type>')
+def modify_plane_type(plane_type):
+	return template('modify_plane_type', plane_type = plane_type , message = ' ')
+
+#机型信息修改操作
+@route('/modify_plane_type/<old_plane_type>', method = 'POST')
+def modify_plane_type(old_plane_type):
+	plane_type = request.forms.get('type')
+	tourist_class = request.forms.get('tourist_class')
+	first_class = request.forms.get('first_class')
+
+	result = update_plane_type(old_plane_type, plane_type, tourist_class, first_class)
+	if result:
+		message = "机型信息修改成功！"
+	else:
+		message = "机型信息修改失败！"
+
+	return template('plane_type', rows = query_plane_type(), message = message)
 
 @route('/show_all')
 def show_all():

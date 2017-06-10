@@ -52,12 +52,12 @@
 	          		<h1 class="text-center text-success">
 						网上机票预订系统
 					</h1>
-			  <form role="form" action="/add_flight" method="GET">
+			  <form role="form" action="/modify_flight/{{flight_id}}" method="POST">
 	           <fieldset>
-	           <legend>添加航班信息</legend>
+	           <legend>修改航班信息</legend>
 	           		<div>
                     	<span class="form-group">
-                      		<label for="Flightinfo1">航班号</label><input class="form-control" id="InputAirinfo1" type="text" name = "flight_id" required="required" style="display: inline-block;width: 25%;"/>
+                      		<label for="Flightinfo1">航班号</label><input class="form-control" id="InputAirinfo1" type="text" name = "flight_id" style="display: inline-block;width: 25%;"/>
                       	</span>
                     	<span class="form-group">
                         	<label for="Flightinfo2">航空公司</label><input class="form-control" id="InputAirinfo2" type="text" name = "company" style="display: inline-block;width: 25%;" />
@@ -97,65 +97,9 @@
                     	<span class="form-group">
                         	<label for="Flightinfo11">头等舱票价</label><input class="form-control" id="InputAirinfo3" type="text" name = "first_price" style="display: inline-block;width: 23%;"/>
                         </span>
-                    </div></br><button type="submit" class="btn btn-default" name="save" value="save">添加</button>
+                    </div></br><button type="submit" class="btn btn-default" name="save" value="save">修改</button>
               </fieldset>
             </form>  
-			<h1 align = "center">所有航班信息</h1>
-				<div class="container">
-					<div class="row clearfix">
-						<div class="col-md-12 column">
-							<table class="table">
-								<thead>
-									<tr>
-										<th>
-											航班号
-										</th>
-										<th>
-											航空公司
-										</th>
-										<th>
-											客机型号
-										</th>
-										<th>
-											始发机场
-										</th>
-										<th>
-											到达机场
-										</th>
-										<th>
-											出发时间
-										</th>
-										<th>
-											到达时间
-										</th>
-										<th>
-											经济舱预定座位数
-										</th>
-										<th>
-											头等舱预定座位数
-										<th>
-											经济舱票价
-										</th>
-										<th>
-											头等舱票价
-										</th>
-									</tr>
-								</thead>
-								<tbody>
-								%for row in rows:
-				  					<tr class = "success">
-				  					%for col in row:
-				    					<td>{{col}}</td>
-				 					%end
-				 						<td><button type="button" class="btn btn-warning" onclick="javascript:window.location.href='/modify_flight/' + '{{row[0]}}'">修改</button></td>
-				 						<td><button type="button" class="btn btn-danger" onclick="javascript:window.location.href='/remove_flight/' + '{{row[0]}}'">删除</button></td>
-				  					</tr>
-								%end
-								</tbody>
-							</table>
-						</div>
-					</div>
-				</div>
 			</div>
 		  </div>
 		</div>
