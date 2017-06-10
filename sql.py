@@ -81,6 +81,21 @@ def insert_passenger(pass_id, name, cellnumber):
 	else:
 		return False
 
+#在passenger表中查询旅客信息是否存在
+def query_passenger(pass_id):
+	sql = "SELECT * FROM passenger WHERE id = %s"
+
+	conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='961105', db='test1', use_unicode=True, charset="utf8")
+	cursor = conn.cursor()
+	cursor.execute(sql, (pass_id))
+	row = cursor.fetchone()
+	cursor.close()
+
+	if row:
+		return True
+	else:
+		return False
+
 #在ticket表中插入订单
 def insert_ticket(pass_id, flight_id, aclass, price, printed = False, paid = False):
 	sql = "INSERT INTO ticket values(%s, %s, %s, %s, %s, %s)"

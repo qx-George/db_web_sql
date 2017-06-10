@@ -2,7 +2,7 @@
 # coding=utf-8
 
 import pymysql, sys
-from sql import delete_ticket, insert_passenger, insert_ticket, update_flight, update_ticket, query_flight
+from sql import delete_ticket, insert_passenger, insert_ticket, update_flight, update_ticket, query_flight, query_passenger
 from bottle import get, route, run, debug, template, request, static_file, error, redirect
 
 reload(sys)
@@ -111,13 +111,14 @@ def do_reserve(flight_id, aclass):
 
 	#根据flight_id和aclass查询票价
 	price = query_flight(flight_id, aclass)[0]
-	#不用查询乘客信息是否已经存在，因为若存在，会自动插入失败
-	result1 = insert_passenger(pass_id, name, cellnumber)
-	result2 = insert_ticket(pass_id, flight_id, aclass, price)
+	#在插入乘客信息之前需要先查询其信息是否已经存在，不存在才插入
+	if not query_passenger(pass_id):
+		insert_passenger(pass_id, name, cellnumber)
+	result1 = insert_ticket(pass_id, flight_id, aclass, price)
 	#最后在flight表中更新座位信息
-	result3 = update_flight(flight_id, aclass)
+	result2 = update_flight(flight_id, aclass)
 
-	if result2 and result3:
+	if result1 and result2:
 		message = '机票预定成功！'
 	else:
 		message = '机票预定失败！'
