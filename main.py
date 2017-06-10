@@ -2,8 +2,12 @@
 # coding=utf-8
 
 import pymysql, sys
-from sql import delete_ticket, insert_passenger, insert_ticket, update_flight, update_ticket, query_flight, query_passenger
 from bottle import get, route, run, debug, template, request, static_file, error, redirect
+from sql import update_flight, query_flight, insert_flight
+from sql import query_airport, insert_airport
+from sql import query_plane_type, insert_plane_type
+from sql import insert_passenger, query_passenger
+from sql import is_printed, query_ticket, update_ticket, insert_ticket, delete_ticket
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -27,7 +31,7 @@ def do_signin():
 	error = '用户名或者密码错误！'
 	if check_signin(administrator, account, password):
 		if administrator == 'Administrator':
-			return template('administrator')
+			return template('administrator', rows = '', message = ' ')
 		else:
 			return template('passenger', rows = '', message = ' ')
 	else: #密码验证错误，弹出相应的错误信息
@@ -90,6 +94,32 @@ def passenger():
 		output = template('passenger', rows=result, aclass = '经济舱', message = ' ') #默认传过去的是预订经济舱
 		return output
 
+
+#管理员的主界面，默认显示所有的航班信息
+@route('/administrator')
+def administrator():
+	result = query_flight()
+	return template('administrator', rows = result, message = ' ')
+
+#管理员的维护机场信息界面，默认显示所有的机场信息
+@route('/airport')
+def airport():
+	result = query_airport()
+	return template('airport', rows = result, message = ' ')
+
+#管理员的维护机型信息界面，默认显示所有的机型信息
+@route('/plane_type')
+def plane_type():
+	result = query_plane_type()
+	return template('plane_type', rows = result, message = ' ')
+
+#管理员的维护订单界面，默认显示所有的订单
+@route('/maintain_order')
+def maintain_order():
+	result = query_ticket()
+	return template('maintain_order', rows = result, message = ' ')
+
+
 #旅客预定机票页面，要通过查询界面传入航班号和舱位这2个参数
 @route('/reserve/<flight_id>/<aclass>')
 def reserve(flight_id, aclass):
@@ -128,14 +158,18 @@ def do_reserve(flight_id, aclass):
 #退订机票
 @route('/unsubscribe/<pass_id>/<flight_id>/<aclass>')
 def unsubscribe(pass_id, flight_id, aclass):
-	#首先在ticket表中删除订单
-	ret1 = delete_ticket(pass_id, flight_id)
-	#然后在flight表中更新座位信息
-	ret2 = update_flight(flight_id, aclass, 'sub')
-	if ret1 and ret2:
-		message = '机票退订成功！'
+	#首先要检查机票是否已经打印，已经打印的机票不能退订
+	if is_printed(pass_id, flight_id):
+		message = '机票已经打印，无法退订！'
 	else:
-		message = '机票退订失败！'
+		#首先在ticket表中删除订单
+		ret1 = delete_ticket(pass_id, flight_id)
+		#然后在flight表中更新座位信息
+		ret2 = update_flight(flight_id, aclass, 'sub')
+		if ret1 and ret2:
+			message = '机票退订成功！'
+		else:
+			message = '机票退订失败！'
 
 	return template('order', rows = show_order(), message = message)
 
@@ -185,7 +219,7 @@ def check_seats(flight_id, aclass):
 			return False
 	return True
 
-#查看订单
+#旅客查看订单的页面
 @route('/order')
 def order():
 
@@ -231,6 +265,59 @@ def view_flight(flight_id, pclass):
 	cursor.close()
 
 	return result
+
+#航班信息添加操作
+@route('/add_flight', method='GET')
+def add_flight():
+	flight_id = request.GET.flight_id.strip()
+	company = request.GET.company.strip()
+	plane_type = request.GET.plane_type.strip()
+	departure_airport = request.GET.departure_airport.strip()
+	arrival_airport = request.GET.arrival_airport.strip()
+	departure_time = request.GET.departure_time.strip()
+	arrival_time = request.GET.arrival_time.strip()
+	tourist_reserved = request.GET.tourist_reserved.strip()
+	first_reserved = request.GET.first_reserved.strip()
+	tourist_price = request.GET.tourist_price.strip()
+	first_price = request.GET.first_price.strip()
+
+	result = insert_flight(flight_id, company, plane_type, departure_airport, arrival_airport,
+	departure_time, arrival_time, tourist_reserved, first_reserved, tourist_price, first_price)
+	if result:
+		message = "航班信息插入成功！"
+	else:
+		message = "航班信息插入失败！"
+
+	return template('administrator', rows = query_flight(), message = message)
+
+#机场信息添加操作
+@route('/add_airport', method='GET')
+def add_airport():
+	airport = request.GET.airport.strip()
+	city = request.GET.city.strip()
+
+	result = insert_airport(airport, city)
+	if result:
+		message = "机场信息插入成功！"
+	else:
+		message = "机场信息插入失败！"
+
+	return template('airport', rows = query_airport(), message = message)
+
+#机型信息添加操作
+@route('/add_plane_type', method='GET')
+def add_plane_type():
+	plane_type = request.GET.type.strip()
+	tourist_class = request.GET.tourist_class.strip()
+	first_class = request.GET.first_class.strip()
+
+	result = insert_plane_type(plane_type, tourist_class, first_class)
+	if result:
+		message = "机型信息插入成功！"
+	else:
+		message = "机型信息插入失败！"
+
+	return template('plane_type', rows = query_plane_type(), message = message)
 
 #info modify module
 @route('/modify')

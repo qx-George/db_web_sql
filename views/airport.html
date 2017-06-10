@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>administrator</title>
+    
+    <link href="/bootstrap-3.3.7-dist/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+    <body>
+	  <div class="container">
+	      <div class="row clearfix">
+	        <div class="col-md-12 column">
+	          <ul class="nav nav-pills">
+	            <li>
+	               <a href="main">首页</a>
+	            </li>
+	            <li>
+	               <a href="administrator">维护航班信息</a>
+	            </li>
+	            <li class="active">
+	               <a href="airport">维护机场信息</a>
+	            </li>
+	            <li>
+	               <a href="plane_type">维护机型信息</a>
+	            </li>
+	            <li>
+	               <a href="maintain_order">维护订单</a>
+	            </li>
+	            <li class="dropdown pull-right">
+	               <a href="#" data-toggle="dropdown" class="dropdown-toggle">下拉<strong class="caret"></strong></a>
+	              <ul class="dropdown-menu">
+	                <li>
+	                   <a href="#">操作</a>
+	                </li>
+	                <li>
+	                   <a href="#">设置栏目</a>
+	                </li>
+	                <li>
+	                   <a href="#">更多设置</a>
+	                </li>
+	                <li class="divider">
+	                </li>
+	                <li>
+	                   <a href="#">分割线</a>
+	                </li>
+	              </ul>
+	            </li>
+	          </ul>
+	          		<h1 class="text-center text-success">
+						网上机票预订系统
+					</h1>
+			  <form role="form" action="add_airport" method="GET">
+	           <fieldset>
+	           <legend>添加机场信息</legend>
+	           		<div class="form-group">
+                        <label for="Airportinfo1">机场</label><input class="form-control" id="InputAirinfo1" type="text" name = "airport" required="required" style="display: inline-block;width: 20%;"/>
+                    </div>
+	           		<div class="form-group">
+                        <label for="Airportinfo2">城市</label><input class="form-control" id="InputAirinfo1" type="text" name = "city" required="required" style="display: inline-block;width: 20%;"/>
+                    </div></br><button type="submit" class="btn btn-default" name="save" value="save">添加</button>
+              </fieldset>
+            </form>  
+			<h1 align = "center">所有机场信息</h1>
+				<div class="container">
+					<div class="row clearfix">
+						<div class="col-md-12 column">
+							<table class="table">
+								<thead>
+									<tr>
+										<th>
+											机场
+										</th>
+										<th>
+											城市
+										</th>
+									</tr>
+								</thead>
+								<tbody>
+								%for row in rows:
+				  					<tr class = "success">
+				  					%for col in row:
+				    					<td>{{col}}</td>
+				 					%end
+				  					</tr>
+								%end
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		  </div>
+		</div>
+		  <script type="text/javascript">
+	        %if message != ' ':
+	          alert('{{message}}')
+	        %end
+	      </script>
+	    <script src="/bootstrap-3.3.7-dist/js/jquery-3.2.1.js"></script>
+      <script src="/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+	</body>
+</html>
