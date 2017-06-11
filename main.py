@@ -369,12 +369,6 @@ def calcul_full(flight_id, plane_type):
 	message = "经济舱满座率  %.2f%%\\n头等舱满座率 %.2f%%" %(tourist_rate, first_rate)
 	return template('administrator', rows = query_flight(), message = message)
 
-
-
-@route('/show_all')
-def show_all():
-	return template('show_all')
-
 @route('/jpg/<filename>')
 def server_static(filename):
 	return static_file(filename, root='./jpg/')
