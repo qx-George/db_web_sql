@@ -140,6 +140,19 @@ def query_flight(flight_id = -1, aclass = '经济舱'):
 
 	return row
 
+#在flight表中查询经济舱和头等舱的预定座位数
+def query_flight_seat(flight_id):
+	sql = "SELECT tourist_reserved, first_reserved FROM flight WHERE id = %s"
+
+	conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='961105', db='test1', use_unicode=True, charset="utf8")
+	cursor = conn.cursor()
+	cursor.execute(sql, (flight_id))
+	row = cursor.fetchone()
+	cursor.close()
+
+	return row
+
+
 #查看特定航班信息，从旅客订单页面发出请求
 def view_flight(flight_id, pclass):
 	sql = "SELECT company, id, departure_time, arrival_time, departure_airport, arrival_airport, " 
@@ -287,13 +300,21 @@ def update_airport(old_airport, airport, city):
 plane_type 表的相关操作
 '''
 #在plane_type表中查询信息
-def query_plane_type():
-	sql = "SELECT * FROM plane_type"
+#加入了query和type函数实现查询信息的复用
+def query_plane_type(query = "all", plane_type = ''):
+	if query == "all":
+		sql = "SELECT * FROM plane_type"
+	else:
+		sql = "SELECT tourist_class, first_class FROM plane_type WHERE type = %s"
 
 	conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='961105', db='test1', use_unicode=True, charset="utf8")
 	cursor = conn.cursor()
-	cursor.execute(sql)
-	rows = cursor.fetchall()
+	if query == "all":
+		cursor.execute(sql)
+		rows = cursor.fetchall()
+	else:
+		cursor.execute(sql, (plane_type))
+		rows = cursor.fetchone()
 	cursor.close()
 
 	return rows
@@ -424,6 +445,21 @@ def is_printed(pass_id, flight_id):
 
 	return row[0]
 
+#在ticket表中查询对应的机票是否已经付款
+def is_paid(pass_id, flight_id):
+	sql = "SELECT paid FROM ticket WHERE pass_id = %s and flight_id = %s"
+	para = []
+	para.append(pass_id)
+	para.append(flight_id)
+
+	conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='961105', db='test1', use_unicode=True, charset="utf8")
+	cursor = conn.cursor()
+	cursor.execute(sql, para)
+	row = cursor.fetchone()
+	cursor.close()
+
+	return row[0]
+
 def query_ticket():
 	sql = "SELECT * FROM ticket"
 
@@ -435,10 +471,12 @@ def query_ticket():
 
 	return rows
 
-#在ticket表中更新信息
+#在ticket表中更新信息，通过operation参数实现打印和付款的复用
 def update_ticket(pass_id, flight_id, operation = 'pay'):
 	if operation == 'pay':
 		sql = "UPDATE ticket SET paid = %s WHERE pass_id = %s and flight_id = %s"
+	else:
+		sql = "UPDATE ticket SET printed = %s WHERE pass_id = %s and flight_id = %s"
 	true = True
 	para = []
 	para.append(true)

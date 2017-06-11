@@ -147,6 +147,7 @@
 				  					%for col in row:
 				    					<td>{{col}}</td>
 				 					%end
+				 						<td><button type="button" class="btn btn-primary" onclick="javascript:window.location.href='/calcul_full/' + '{{row[0]}}/' + '{{row[2]}}'">满座率</button></td>
 				 						<td><button type="button" class="btn btn-warning" onclick="javascript:window.location.href='/modify_flight/' + '{{row[0]}}'">修改</button></td>
 				 						<td><button type="button" class="btn btn-danger" onclick="javascript:window.location.href='/remove_flight/' + '{{row[0]}}'">删除</button></td>
 				  					</tr>

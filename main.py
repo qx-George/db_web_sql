@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+from __future__ import division
+
 import pymysql, sys
 from bottle import get, route, run, debug, template, request, static_file, error, redirect
-from sql import update_flight, query_flight, view_flight, insert_flight, delete_flight, update_flight_all
+from sql import update_flight, query_flight, view_flight, insert_flight, delete_flight, update_flight_all, query_flight_seat
 from sql import query_airport, insert_airport, delete_airport, update_airport
 from sql import query_plane_type, insert_plane_type, delete_plane_type, update_plane_type
 from sql import insert_passenger, query_passenger
-from sql import is_printed, query_ticket, update_ticket, insert_ticket, delete_ticket
+from sql import is_printed, is_paid, query_ticket, update_ticket, insert_ticket, delete_ticket
 #对表的组合操作
 from sql import passenger_flight, check_seats, show_order
 
@@ -328,6 +330,46 @@ def modify_plane_type(old_plane_type):
 		message = "机型信息修改失败！"
 
 	return template('plane_type', rows = query_plane_type(), message = message)
+
+#管理员为已付款旅客打印订单
+@route('/print_order/<pass_id>/<flight_id>')
+def print_order(pass_id, flight_id):
+	#首先查询该机票是否已经打印
+	if is_printed(pass_id, flight_id):
+		message = "机票已经打印，打印失败！"
+	else:
+		#再查询旅客是否已经付款，若未付款则不能打印
+		if not is_paid(pass_id, flight_id):
+			message = "机票还未付款，打印失败！"
+		else:
+			result = update_ticket(pass_id, flight_id, 'print')
+			if result:
+				message = "机票打印成功！"
+			else:
+				message = "机票打印失败！"
+	result = query_ticket()
+
+	return template('maintain_order', rows = result, message = message)
+
+#计算航班的满座率
+@route('/calcul_full/<flight_id>/<plane_type>')
+def calcul_full(flight_id, plane_type):
+	#首先查到已预订的座位数
+	result0 = query_flight_seat(flight_id)
+	tourist_reserved = result0[0]
+	first_reserved = result0[1]
+	#再查找总的座位数
+	result1 = query_plane_type("seat", plane_type)
+	tourist_class = result1[0]
+	first_class = result1[1]
+
+	tourist_rate = tourist_reserved / tourist_class
+	first_rate = first_reserved / first_class		
+
+	message = "经济舱满座率  %.2f%%\\n头等舱满座率 %.2f%%" %(tourist_rate, first_rate)
+	return template('administrator', rows = query_flight(), message = message)
+
+
 
 @route('/show_all')
 def show_all():
